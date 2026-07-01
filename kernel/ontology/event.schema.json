@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://salam-os/kernel/ontology/event.schema.json",
+  "title": "Event",
+  "description": "A discrete, timestamped occurrence in commercial reality that is significant enough to produce or update Evidence. The unit of commercial activity SALAM observes. See kernel/ontology/event.md for full canonical definition.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "event_type",
+    "occurred_at",
+    "recorded_at",
+    "participants",
+    "evidence_refs",
+    "outcome",
+    "significance",
+    "market",
+    "tags",
+    "flags",
+    "created_at",
+    "version",
+    "archived"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Canonical identifier. Never reused."
+    },
+    "event_type": {
+      "type": "string",
+      "description": "Classification of the occurrence. Core types defined in kernel; extended at Specification layer."
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the event happened in reality."
+    },
+    "recorded_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When SALAM recorded this Event."
+    },
+    "participants": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/Participant" },
+      "minItems": 1,
+      "description": "Merchants and Organizations involved. Minimum one."
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "minItems": 1,
+      "description": "Append-only. Evidence objects documenting this Event. Minimum one at creation."
+    },
+    "outcome": {
+      "type": "string",
+      "enum": ["pending", "completed", "failed", "disputed", "cancelled", "unknown"]
+    },
+    "outcome_resolved_at": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Set once when outcome reaches a terminal state. Immutable thereafter."
+    },
+    "significance": {
+      "type": "string",
+      "enum": ["routine", "notable", "critical"],
+      "description": "Drives downstream processing priority."
+    },
+    "market": {
+      "type": "string",
+      "pattern": "^[A-Z]{2}$",
+      "description": "ISO 3166-1 alpha-2 country code where the Event occurred."
+    },
+    "channel": {
+      "type": ["string", "null"],
+      "description": "Commercial channel in which this Event took place, if applicable."
+    },
+    "linked_transaction_ref": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "If this Event produced or is tied to a Transaction, that Transaction ID."
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Append-only. Free-form classification tags for filtering and routing."
+    },
+    "flags": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/Flag" },
+      "description": "Append-only. Compliance, fraud, or quality flags raised on this Event."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "archived": {
+      "type": "boolean"
+    }
+  },
+  "$defs": {
+    "Participant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["participant_id", "participant_type", "role"],
+      "properties": {
+        "participant_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "The Merchant ID or Organization ID."
+        },
+        "participant_type": {
+          "type": "string",
+          "enum": ["merchant", "organization"]
+        },
+        "role": {
+          "type": "string",
+          "description": "Role in this Event. e.g. seller, buyer, logistics_provider, guarantor, subject, reporter. Open string; Specification layer defines valid roles per event_type."
+        }
+      }
+    },
+    "Flag": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["flag_id", "flag_type", "raised_by", "raised_at"],
+      "properties": {
+        "flag_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "flag_type": {
+          "type": "string"
+        },
+        "raised_by": {
+          "type": "string"
+        },
+        "raised_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "evidence_ref": {
+          "type": ["string", "null"],
+          "format": "uuid"
+        },
+        "resolved_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "resolution_note": {
+          "type": ["string", "null"]
+        }
+      }
+    }
+  }
+}
