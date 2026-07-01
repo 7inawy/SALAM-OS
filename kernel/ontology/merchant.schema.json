@@ -1,0 +1,223 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://salam-os/kernel/ontology/merchant.schema.json",
+  "title": "Merchant",
+  "description": "A commercial actor that sells goods or services within an emerging market context. Primary subject of SALAM's intelligence operations. See kernel/ontology/merchant.md for full canonical definition.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "merchant_id",
+    "display_name",
+    "identity_status",
+    "identity_refs",
+    "category",
+    "operating_markets",
+    "channels",
+    "status",
+    "flags",
+    "created_at",
+    "version",
+    "archived"
+  ],
+  "properties": {
+    "merchant_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Canonical identifier. Never reused."
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Trading name as presented to counterparties."
+    },
+    "legal_name": {
+      "type": ["string", "null"],
+      "description": "Registered legal name, if known and verified."
+    },
+    "identity_status": {
+      "type": "string",
+      "enum": ["unverified", "partially_verified", "verified", "disputed", "suspended"],
+      "description": "State machine driven by incoming identity Evidence."
+    },
+    "identity_refs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/EvidenceRef" },
+      "description": "Append-only. Evidence objects underpinning the current identity_status."
+    },
+    "registration": {
+      "oneOf": [
+        { "$ref": "#/$defs/RegistrationMetadata" },
+        { "type": "null" }
+      ]
+    },
+    "category": {
+      "type": "string",
+      "description": "Primary commercial category. Open enum per Specification layer."
+    },
+    "operating_markets": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z]{2}$"
+      },
+      "minItems": 1,
+      "description": "ISO 3166-1 alpha-2 country codes where this Merchant operates."
+    },
+    "channels": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["marketplace", "social_commerce", "direct", "physical_retail", "wholesale"]
+      },
+      "minItems": 1
+    },
+    "contact": {
+      "oneOf": [
+        { "$ref": "#/$defs/ContactMetadata" },
+        { "type": "null" }
+      ]
+    },
+    "commercial_profile_ref": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Pointer to the active Knowledge object summarizing this Merchant's commercial behavior."
+    },
+    "trust_score_ref": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Pointer to the active Trust object for this Merchant."
+    },
+    "risk_score_ref": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Pointer to the active Risk object for this Merchant."
+    },
+    "organization_ref": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Parent Organization ID, if this Merchant operates under one."
+    },
+    "linked_merchants": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "description": "Append-only. Other Merchant IDs believed to be operated by the same real-world entity."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["active", "inactive", "suspended", "deregistered"]
+    },
+    "flags": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/Flag" },
+      "description": "Append-only. Active compliance, fraud, or quality flags."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_activity_at": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "When the most recent Evidence was collected about this Merchant."
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "archived": {
+      "type": "boolean",
+      "description": "One-way transition false -> true. Never deleted."
+    }
+  },
+  "$defs": {
+    "EvidenceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidence_id", "claim_type"],
+      "properties": {
+        "evidence_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "claim_type": {
+          "type": "string",
+          "description": "The claim_type of the referenced Evidence object, for fast filtering."
+        }
+      }
+    },
+    "RegistrationMetadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["country", "registration_number", "registration_type", "registered_at", "evidence_ref"],
+      "properties": {
+        "country": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$"
+        },
+        "registration_number": {
+          "type": "string"
+        },
+        "registration_type": {
+          "type": "string",
+          "description": "e.g. sole_trader, llc, cooperative, informal."
+        },
+        "registered_at": {
+          "type": "string",
+          "format": "date"
+        },
+        "evidence_ref": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Evidence object verifying this registration."
+        }
+      }
+    },
+    "ContactMetadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "phone": { "type": ["string", "null"] },
+        "email": { "type": ["string", "null"], "format": "email" },
+        "address": { "type": ["string", "null"] },
+        "whatsapp": { "type": ["string", "null"] }
+      }
+    },
+    "Flag": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["flag_id", "flag_type", "raised_by", "raised_at"],
+      "properties": {
+        "flag_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "flag_type": {
+          "type": "string",
+          "description": "e.g. fraud_suspicion, compliance_hold, data_quality, identity_conflict."
+        },
+        "raised_by": {
+          "type": "string",
+          "description": "Engine or governance actor that raised the flag."
+        },
+        "raised_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "evidence_ref": {
+          "type": ["string", "null"],
+          "format": "uuid"
+        },
+        "resolved_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "resolution_note": {
+          "type": ["string", "null"]
+        }
+      }
+    }
+  }
+}
