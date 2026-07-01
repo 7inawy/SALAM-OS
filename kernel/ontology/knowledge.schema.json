@@ -1,0 +1,222 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://salam-os/kernel/ontology/knowledge.schema.json",
+  "title": "Knowledge",
+  "description": "Validated Evidence, organized and interpreted within a commercial context. The system's current best understanding of a subject, derived exclusively from one or more validated Evidence objects. See kernel/ontology/knowledge.md for full canonical definition.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "knowledge_id",
+    "subject_ref",
+    "knowledge_type",
+    "statement",
+    "evidence_refs",
+    "derivation_method",
+    "confidence",
+    "validity",
+    "status",
+    "provenance",
+    "version",
+    "created_at",
+    "last_evaluated_at",
+    "archived"
+  ],
+  "properties": {
+    "knowledge_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Canonical identifier. Never reused, even across versions."
+    },
+    "subject_ref": {
+      "$ref": "#/$defs/EntityRef",
+      "description": "The entity this knowledge is about."
+    },
+    "knowledge_type": {
+      "type": "string",
+      "description": "Domain classification. Open enum extended via Specification layer. e.g. merchant_profile, delivery_pattern, payment_behavior, identity_verification, risk_indicator."
+    },
+    "statement": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The interpreted claim in normalized form. What the system understands to be true about the subject."
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "minItems": 1,
+      "description": "One or more evidence_id values this knowledge is derived from. All referenced Evidence must have validation_status: validated."
+    },
+    "derivation_method": {
+      "type": "string",
+      "enum": [
+        "direct_extraction",
+        "aggregation",
+        "inference",
+        "corroboration",
+        "contradiction_resolution"
+      ],
+      "description": "How Evidence was turned into Knowledge."
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Weighted aggregate of the backing Evidence confidence scores, adjusted for derivation method. Mutable/recalculable."
+    },
+    "validity": {
+      "$ref": "#/$defs/ValidityWindow"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["forming", "active", "stale", "superseded", "retracted"],
+      "description": "State machine: forming → active → stale → superseded | retracted."
+    },
+    "supersedes": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Prior knowledge_id this version replaces, if any."
+    },
+    "retraction_reason": {
+      "type": ["string", "null"],
+      "description": "Required if status = retracted. Immutable once set."
+    },
+    "provenance": {
+      "$ref": "#/$defs/KnowledgeProvenance"
+    },
+    "graph_links": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/EntityRef" },
+      "description": "Append-only. Commercial Graph entities this knowledge informs."
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Monotonically increasing per knowledge_id lineage."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this Knowledge object was first derived."
+    },
+    "last_evaluated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When confidence and validity were last recomputed."
+    },
+    "archived": {
+      "type": "boolean",
+      "description": "One-way transition false -> true. Knowledge is archived, never deleted."
+    }
+  },
+  "$defs": {
+    "EntityRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entity_type", "entity_id"],
+      "properties": {
+        "entity_type": {
+          "type": "string",
+          "description": "References a Kernel ontology entity, e.g. Merchant, Organization, Transaction."
+        },
+        "entity_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    },
+    "ValidityWindow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["valid_from", "decay_rate", "staleness_threshold"],
+      "properties": {
+        "valid_from": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When this Knowledge became current."
+        },
+        "valid_until": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "When this Knowledge expires. Null = indefinite until superseded or retracted."
+        },
+        "decay_rate": {
+          "type": "string",
+          "enum": ["none", "slow", "moderate", "fast"],
+          "description": "How fast confidence degrades over time. Assigned per knowledge_type — e.g. identity_verification decays slowly, delivery_pattern decays fast."
+        },
+        "staleness_threshold": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Confidence floor below which status automatically transitions to stale."
+        }
+      }
+    },
+    "KnowledgeProvenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["derived_by", "derived_at", "evidence_snapshot", "derivation_chain"],
+      "properties": {
+        "derived_by": {
+          "type": "string",
+          "description": "Engine or process that produced this Knowledge object."
+        },
+        "derived_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "evidence_snapshot": {
+          "type": "array",
+          "description": "Immutable. Snapshot of evidence_id list and confidence scores at derivation time. Preserves auditability even after backing Evidence is updated.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["evidence_id", "confidence_at_derivation"],
+            "properties": {
+              "evidence_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "confidence_at_derivation": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            }
+          },
+          "minItems": 1
+        },
+        "derivation_chain": {
+          "type": "array",
+          "description": "Append-only log of every re-evaluation or re-scoring event after initial derivation.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["event", "actor", "timestamp", "trigger"],
+            "properties": {
+              "event": {
+                "type": "string",
+                "description": "e.g. re_score, stale_transition, retraction, supersession."
+              },
+              "actor": {
+                "type": "string",
+                "description": "System component or identity that triggered the event."
+              },
+              "timestamp": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "trigger": {
+                "type": "string",
+                "description": "What caused this event, e.g. evidence_superseded, confidence_decay, manual_review."
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

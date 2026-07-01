@@ -22,7 +22,7 @@ Each entity in `kernel/ontology/` is defined twice, intentionally:
 | Entity | Status |
 |---|---|
 | Evidence | ✅ [`kernel/ontology/evidence.md`](kernel/ontology/evidence.md) |
-| Knowledge | not started |
+| Knowledge | ✅ [`kernel/ontology/knowledge.md`](kernel/ontology/knowledge.md) |
 | Commercial Intelligence | not started |
 | Trust | not started |
 | Risk | not started |
