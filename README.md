@@ -23,19 +23,19 @@ Each entity in `kernel/ontology/` is defined twice, intentionally:
 |---|---|
 | Evidence | ✅ [`kernel/ontology/evidence.md`](kernel/ontology/evidence.md) |
 | Knowledge | ✅ [`kernel/ontology/knowledge.md`](kernel/ontology/knowledge.md) |
-| Commercial Intelligence | not started |
-| Trust | not started |
-| Risk | not started |
-| Decision | not started |
-| Outcome | not started |
 | Merchant | ✅ [`kernel/ontology/merchant.md`](kernel/ontology/merchant.md) |
 | Organization | ✅ [`kernel/ontology/organization.md`](kernel/ontology/organization.md) |
 | Event | ✅ [`kernel/ontology/event.md`](kernel/ontology/event.md) |
 | Transaction | ✅ [`kernel/ontology/transaction.md`](kernel/ontology/transaction.md) |
 | Relationship | ✅ [`kernel/ontology/relationship.md`](kernel/ontology/relationship.md) |
-| Graph | not started |
-| Policy | not started |
-| Objective | not started |
+| Graph | ✅ [`kernel/ontology/graph.md`](kernel/ontology/graph.md) |
+| Trust | ✅ [`kernel/ontology/trust.md`](kernel/ontology/trust.md) |
+| Risk | ✅ [`kernel/ontology/risk.md`](kernel/ontology/risk.md) |
+| Commercial Intelligence | deferred |
+| Decision | deferred |
+| Outcome | deferred |
+| Objective | deferred |
+| Policy | deferred |
 
 ## Repository Layout
 

@@ -1,0 +1,157 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://salam-os/kernel/ontology/graph.schema.json",
+  "title": "Graph",
+  "description": "The indexed, queryable structure organizing all Merchants, Organizations, and Relationships into a navigable commercial network. A derived index, not a data store. See kernel/ontology/graph.md for full canonical definition.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "graph_id",
+    "scope",
+    "node_count",
+    "edge_count",
+    "last_updated_at",
+    "version"
+  ],
+  "properties": {
+    "graph_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Canonical identifier for this Graph scope instance."
+    },
+    "scope": {
+      "$ref": "#/$defs/GraphScope"
+    },
+    "node_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Current number of nodes (Merchants + Organizations)."
+    },
+    "edge_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Current number of Relationship edges."
+    },
+    "last_updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Monotonically increasing on every structural update."
+    }
+  },
+  "$defs": {
+    "GraphScope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scope_type"],
+      "properties": {
+        "scope_type": {
+          "type": "string",
+          "enum": ["global", "market", "platform", "segment"]
+        },
+        "market": {
+          "type": ["string", "null"],
+          "pattern": "^[A-Z]{2}$",
+          "description": "ISO 3166-1 alpha-2. Required if scope_type is market."
+        },
+        "platform_ref": {
+          "type": ["string", "null"],
+          "description": "Platform identifier. Required if scope_type is platform."
+        },
+        "segment": {
+          "type": ["string", "null"],
+          "description": "Segment identifier. Required if scope_type is segment."
+        }
+      }
+    },
+    "GraphNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["node_id", "node_type", "identity_status", "status", "degree", "flags"],
+      "properties": {
+        "node_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "The merchant_id or organization_id."
+        },
+        "node_type": {
+          "type": "string",
+          "enum": ["merchant", "organization"]
+        },
+        "identity_status": {
+          "type": "string",
+          "enum": ["unverified", "partially_verified", "verified", "disputed", "suspended"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "inactive", "suspended", "deregistered", "dissolved"]
+        },
+        "trust_score": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "risk_score": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "degree": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of active Relationship edges connected to this node."
+        },
+        "flags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Active flag types from the source entity."
+        }
+      }
+    },
+    "GraphEdge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["edge_id", "party_a", "party_b", "relationship_type", "direction", "weight", "status"],
+      "properties": {
+        "edge_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "The relationship_id."
+        },
+        "party_a": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "party_b": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "relationship_type": {
+          "type": "string"
+        },
+        "direction": {
+          "type": "string",
+          "enum": ["unidirectional_a_to_b", "unidirectional_b_to_a", "bidirectional"]
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "The Relationship strength. Used for graph traversal and scoring."
+        },
+        "outcome_summary_ref": {
+          "type": ["string", "null"],
+          "format": "uuid",
+          "description": "Reference to the Relationship's OutcomeSummary."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "dormant", "terminated"]
+        }
+      }
+    }
+  }
+}
