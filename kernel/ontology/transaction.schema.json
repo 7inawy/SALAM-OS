@@ -1,0 +1,220 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://salam-os/kernel/ontology/transaction.schema.json",
+  "title": "Transaction",
+  "description": "A financially-settled commercial exchange between two or more parties. A specific subtype of Event where financial settlement occurs. See kernel/ontology/transaction.md for full canonical definition.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "transaction_id",
+    "event_ref",
+    "transaction_type",
+    "initiated_at",
+    "parties",
+    "value",
+    "currency",
+    "payment_method",
+    "status",
+    "evidence_refs",
+    "flags",
+    "market",
+    "created_at",
+    "version",
+    "archived"
+  ],
+  "properties": {
+    "transaction_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Canonical identifier. Never reused."
+    },
+    "event_ref": {
+      "type": "string",
+      "format": "uuid",
+      "description": "The parent Event this Transaction belongs to. Required."
+    },
+    "transaction_type": {
+      "type": "string",
+      "enum": [
+        "purchase",
+        "escrow_deposit",
+        "escrow_release",
+        "escrow_refund",
+        "transfer",
+        "refund",
+        "reversal",
+        "fee",
+        "settlement_batch"
+      ]
+    },
+    "initiated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the transaction was initiated by a participant."
+    },
+    "settled_at": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "When financial settlement occurred. Set once; immutable thereafter."
+    },
+    "parties": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/Party" },
+      "minItems": 2,
+      "description": "Payer and payee (or equivalent). Minimum two."
+    },
+    "value": {
+      "$ref": "#/$defs/MonetaryValue"
+    },
+    "currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$",
+      "description": "ISO 4217 currency code."
+    },
+    "settlement_currency": {
+      "type": ["string", "null"],
+      "pattern": "^[A-Z]{3}$",
+      "description": "Currency in which settlement actually occurred, if different from currency."
+    },
+    "exchange_rate": {
+      "type": ["number", "null"],
+      "exclusiveMinimum": 0,
+      "description": "Exchange rate applied at settlement, if currencies differ."
+    },
+    "payment_method": {
+      "type": "string",
+      "description": "e.g. mobile_money, bank_transfer, cash_on_delivery, escrow, bnpl, card."
+    },
+    "platform_ref": {
+      "type": ["string", "null"],
+      "description": "Marketplace or platform through which this transaction was routed."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["initiated", "processing", "held", "completed", "failed", "reversed", "disputed"]
+    },
+    "status_reason": {
+      "type": ["string", "null"],
+      "description": "Required for failed, reversed, disputed. Immutable once set for terminal states."
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "minItems": 1,
+      "description": "Append-only. Evidence objects documenting this Transaction."
+    },
+    "escrow_ref": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Escrow record ID if this transaction is under escrow governance."
+    },
+    "dispute_ref": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Event ID of the dispute. Set once if Transaction is disputed."
+    },
+    "flags": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/Flag" },
+      "description": "Append-only. Compliance, fraud, or quality flags."
+    },
+    "market": {
+      "type": "string",
+      "pattern": "^[A-Z]{2}$",
+      "description": "ISO 3166-1 alpha-2 country code where the Transaction originated."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "archived": {
+      "type": "boolean"
+    }
+  },
+  "$defs": {
+    "Party": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["party_id", "party_type", "role"],
+      "properties": {
+        "party_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "party_type": {
+          "type": "string",
+          "enum": ["merchant", "organization"]
+        },
+        "role": {
+          "type": "string",
+          "enum": ["payer", "payee", "escrow_agent", "guarantor", "platform"]
+        },
+        "account_ref": {
+          "type": ["string", "null"],
+          "description": "Payment account or wallet identifier, if known."
+        }
+      }
+    },
+    "MonetaryValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["amount"],
+      "properties": {
+        "amount": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Transaction amount in declared currency. Must be positive."
+        },
+        "fee_amount": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "description": "Platform or processing fee, if separately tracked."
+        },
+        "net_amount": {
+          "type": ["number", "null"],
+          "exclusiveMinimum": 0,
+          "description": "Amount after fees."
+        }
+      }
+    },
+    "Flag": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["flag_id", "flag_type", "raised_by", "raised_at"],
+      "properties": {
+        "flag_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "flag_type": {
+          "type": "string"
+        },
+        "raised_by": {
+          "type": "string"
+        },
+        "raised_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "evidence_ref": {
+          "type": ["string", "null"],
+          "format": "uuid"
+        },
+        "resolved_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "resolution_note": {
+          "type": ["string", "null"]
+        }
+      }
+    }
+  }
+}
