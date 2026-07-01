@@ -29,7 +29,7 @@ Each entity in `kernel/ontology/` is defined twice, intentionally:
 | Decision | not started |
 | Outcome | not started |
 | Merchant | ✅ [`kernel/ontology/merchant.md`](kernel/ontology/merchant.md) |
-| Organization | not started |
+| Organization | ✅ [`kernel/ontology/organization.md`](kernel/ontology/organization.md) |
 | Event | not started |
 | Relationship | not started |
 | Graph | not started |

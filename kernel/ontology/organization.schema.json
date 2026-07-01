@@ -1,0 +1,245 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://salam-os/kernel/ontology/organization.schema.json",
+  "title": "Organization",
+  "description": "A legal, commercial, or institutional entity that owns, controls, or governs one or more Merchants. The structural layer above the Merchant. See kernel/ontology/organization.md for full canonical definition.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "organization_id",
+    "display_name",
+    "organization_type",
+    "identity_status",
+    "identity_refs",
+    "operating_markets",
+    "merchant_refs",
+    "subsidiary_refs",
+    "beneficial_owners",
+    "flags",
+    "status",
+    "created_at",
+    "version",
+    "archived"
+  ],
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Canonical identifier. Never reused."
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "legal_name": {
+      "type": ["string", "null"]
+    },
+    "organization_type": {
+      "type": "string",
+      "enum": [
+        "company",
+        "holding_group",
+        "cooperative",
+        "financial_institution",
+        "logistics_operator",
+        "government_body",
+        "ngo",
+        "other"
+      ]
+    },
+    "identity_status": {
+      "type": "string",
+      "enum": ["unverified", "partially_verified", "verified", "disputed", "suspended"]
+    },
+    "identity_refs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/EvidenceRef" },
+      "description": "Append-only. Evidence underpinning identity_status."
+    },
+    "registration": {
+      "oneOf": [
+        { "$ref": "#/$defs/RegistrationMetadata" },
+        { "type": "null" }
+      ]
+    },
+    "operating_markets": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z]{2}$"
+      },
+      "minItems": 1
+    },
+    "merchant_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "description": "Append-only. Merchant IDs owned or controlled by this Organization."
+    },
+    "parent_organization_ref": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Parent Organization ID for hierarchical group structures. Must not create a cycle."
+    },
+    "subsidiary_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "description": "Append-only. Child Organization IDs."
+    },
+    "commercial_profile_ref": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Active Knowledge object for group-level commercial behavior."
+    },
+    "trust_score_ref": {
+      "type": ["string", "null"],
+      "format": "uuid"
+    },
+    "risk_score_ref": {
+      "type": ["string", "null"],
+      "format": "uuid"
+    },
+    "beneficial_owners": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/BeneficialOwner" },
+      "description": "Known beneficial owners. Governance-sensitive."
+    },
+    "flags": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/Flag" },
+      "description": "Append-only. Compliance, fraud, or quality flags."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["active", "inactive", "suspended", "dissolved"]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_activity_at": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "archived": {
+      "type": "boolean"
+    }
+  },
+  "$defs": {
+    "EvidenceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidence_id", "claim_type"],
+      "properties": {
+        "evidence_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "claim_type": {
+          "type": "string"
+        }
+      }
+    },
+    "RegistrationMetadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["country", "registration_number", "registration_type", "registered_at", "evidence_ref"],
+      "properties": {
+        "country": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$"
+        },
+        "registration_number": {
+          "type": "string"
+        },
+        "registration_type": {
+          "type": "string",
+          "description": "e.g. llc, holding_company, cooperative, informal."
+        },
+        "registered_at": {
+          "type": "string",
+          "format": "date"
+        },
+        "evidence_ref": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    },
+    "BeneficialOwner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["owner_id", "owner_type", "display_name", "control_type", "verified"],
+      "properties": {
+        "owner_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "owner_type": {
+          "type": "string",
+          "enum": ["natural_person", "legal_entity"]
+        },
+        "display_name": {
+          "type": "string"
+        },
+        "ownership_percentage": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 100
+        },
+        "control_type": {
+          "type": "string",
+          "description": "e.g. direct_shareholder, beneficial_owner, director, authorized_signatory."
+        },
+        "evidence_ref": {
+          "type": ["string", "null"],
+          "format": "uuid"
+        },
+        "verified": {
+          "type": "boolean"
+        }
+      }
+    },
+    "Flag": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["flag_id", "flag_type", "raised_by", "raised_at"],
+      "properties": {
+        "flag_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "flag_type": {
+          "type": "string"
+        },
+        "raised_by": {
+          "type": "string"
+        },
+        "raised_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "evidence_ref": {
+          "type": ["string", "null"],
+          "format": "uuid"
+        },
+        "resolved_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "resolution_note": {
+          "type": ["string", "null"]
+        }
+      }
+    }
+  }
+}
