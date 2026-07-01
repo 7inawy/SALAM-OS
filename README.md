@@ -32,7 +32,7 @@ Each entity in `kernel/ontology/` is defined twice, intentionally:
 | Organization | ✅ [`kernel/ontology/organization.md`](kernel/ontology/organization.md) |
 | Event | ✅ [`kernel/ontology/event.md`](kernel/ontology/event.md) |
 | Transaction | ✅ [`kernel/ontology/transaction.md`](kernel/ontology/transaction.md) |
-| Relationship | not started |
+| Relationship | ✅ [`kernel/ontology/relationship.md`](kernel/ontology/relationship.md) |
 | Graph | not started |
 | Policy | not started |
 | Objective | not started |
