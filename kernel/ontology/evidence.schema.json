@@ -1,0 +1,213 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://salam-os/kernel/ontology/evidence.schema.json",
+  "title": "Evidence",
+  "description": "An immutable, attributable observation about commercial reality. The root entity of the SALAM Kernel ontology. See kernel/ontology/evidence.md for full canonical definition, lifecycle, and rationale.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "evidence_id",
+    "subject_ref",
+    "claim",
+    "claim_type",
+    "source",
+    "collection_method",
+    "collected_at",
+    "ingested_at",
+    "validation_status",
+    "confidence",
+    "quality",
+    "provenance",
+    "version",
+    "archived"
+  ],
+  "properties": {
+    "evidence_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Canonical identifier. Never reused, even across versions."
+    },
+    "subject_ref": {
+      "$ref": "#/$defs/EntityRef",
+      "description": "The entity this evidence is about."
+    },
+    "claim": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The observation itself, in normalized form."
+    },
+    "claim_type": {
+      "type": "string",
+      "description": "Domain-specific classification of the claim. Open enum, extended via Specification layer (e.g. delivery_confirmation, payment_record, identity_document)."
+    },
+    "raw_payload_ref": {
+      "type": ["string", "null"],
+      "format": "uri",
+      "description": "Pointer to the original unprocessed source artifact, if one exists."
+    },
+    "source": {
+      "$ref": "#/$defs/Source"
+    },
+    "collection_method": {
+      "type": "string",
+      "enum": [
+        "direct_observation",
+        "third_party_attestation",
+        "user_submission",
+        "system_inference",
+        "document_extraction"
+      ]
+    },
+    "collected_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the observation occurred (not when it was ingested)."
+    },
+    "ingested_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When SALAM received it."
+    },
+    "validation_status": {
+      "type": "string",
+      "enum": ["unvalidated", "pending", "validated", "rejected", "superseded"]
+    },
+    "validated_at": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Set once, when validation completes. Immutable thereafter."
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "System's current confidence in the claim's truth. Mutable/recalculable; derived from quality dimensions."
+    },
+    "quality": {
+      "$ref": "#/$defs/QualityMetadata"
+    },
+    "provenance": {
+      "$ref": "#/$defs/ProvenanceMetadata"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Monotonically increasing per evidence_id lineage."
+    },
+    "supersedes": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Prior evidence_id this version replaces, if any."
+    },
+    "links": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/EntityRef" },
+      "description": "Append-only. Other graph entities this evidence touches or strengthens/weakens."
+    },
+    "archived": {
+      "type": "boolean",
+      "description": "One-way transition false -> true. Evidence is archived, never deleted."
+    }
+  },
+  "$defs": {
+    "EntityRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entity_type", "entity_id"],
+      "properties": {
+        "entity_type": {
+          "type": "string",
+          "description": "References a Kernel ontology entity, e.g. Merchant, Transaction, Organization."
+        },
+        "entity_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    },
+    "Source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_type", "identifier"],
+      "properties": {
+        "source_type": {
+          "type": "string",
+          "description": "e.g. api_integration, human_submission, sensor, document_scan, third_party_service."
+        },
+        "identifier": {
+          "type": "string",
+          "description": "Identifier of the specific source instance (system name, user id, integration id)."
+        }
+      }
+    },
+    "QualityMetadata": {
+      "type": "object",
+      "description": "Seven-dimension quality scoring. Mutable/recalculable as new corroborating or contradicting evidence arrives elsewhere in the graph.",
+      "additionalProperties": false,
+      "required": [
+        "authenticity",
+        "integrity",
+        "freshness",
+        "completeness",
+        "verifiability",
+        "provenance_score",
+        "consistency"
+      ],
+      "properties": {
+        "authenticity": { "type": "number", "minimum": 0, "maximum": 1 },
+        "integrity": { "type": "number", "minimum": 0, "maximum": 1 },
+        "freshness": { "type": "number", "minimum": 0, "maximum": 1 },
+        "completeness": { "type": "number", "minimum": 0, "maximum": 1 },
+        "verifiability": { "type": "number", "minimum": 0, "maximum": 1 },
+        "provenance_score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "consistency": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "ProvenanceMetadata": {
+      "type": "object",
+      "description": "Append-only provenance chain. Nothing is ever removed from 'chain'.",
+      "additionalProperties": false,
+      "required": ["origin", "collection_method", "chain", "ownership", "verification_confidence"],
+      "properties": {
+        "origin": {
+          "type": "string",
+          "description": "The original system, person, or process that generated the observation."
+        },
+        "collection_method": {
+          "type": "string",
+          "description": "Duplicated from top-level field for convenience in provenance queries."
+        },
+        "chain": {
+          "type": "array",
+          "description": "Ordered list of every transformation step applied since capture.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["step", "actor", "timestamp"],
+            "properties": {
+              "step": {
+                "type": "string",
+                "description": "e.g. normalize, enrich, re-score, validate."
+              },
+              "actor": {
+                "type": "string",
+                "description": "System component or identity that performed the step."
+              },
+              "timestamp": { "type": "string", "format": "date-time" }
+            }
+          }
+        },
+        "ownership": {
+          "type": "string",
+          "description": "Which participant/organization is accountable for this evidence's accuracy."
+        },
+        "verification_confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Confidence in the provenance chain itself, separate from claim confidence."
+        }
+      }
+    }
+  }
+}
