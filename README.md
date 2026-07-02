@@ -57,3 +57,25 @@ docs/                   generated documentation — disposable, never authoritat
 - No generated artifact is ever a source of truth
 - Every irreversible architectural decision gets an ADR before implementation
 - Evidence is immutable and append-only — the pattern all other ontology entities follow
+
+### Principles Status
+
+| Principle | Status |
+|---|---|
+| Evidence-First | ✅ [`kernel/principles/evidence-first.md`](kernel/principles/evidence-first.md) |
+| Immutability | ✅ [`kernel/principles/immutability.md`](kernel/principles/immutability.md) |
+| Event-Driven Architecture | ✅ [`kernel/principles/event-driven-architecture.md`](kernel/principles/event-driven-architecture.md) |
+| Explainability | ✅ [`kernel/principles/explainability.md`](kernel/principles/explainability.md) |
+| Dependency Direction | ✅ [`kernel/principles/dependency-direction.md`](kernel/principles/dependency-direction.md) |
+
+### Engine Specifications Status
+
+| Engine | Status |
+|---|---|
+| Evidence Engine | ✅ [`specifications/engines/evidence-engine.md`](specifications/engines/evidence-engine.md) |
+| Knowledge Engine | ✅ [`specifications/engines/knowledge-engine.md`](specifications/engines/knowledge-engine.md) |
+| Graph Engine | ✅ [`specifications/engines/graph-engine.md`](specifications/engines/graph-engine.md) |
+| Trust Engine | ✅ [`specifications/engines/trust-engine.md`](specifications/engines/trust-engine.md) |
+| Risk Engine | ✅ [`specifications/engines/risk-engine.md`](specifications/engines/risk-engine.md) |
+| Reasoning Engine | ✅ [`specifications/engines/reasoning-engine.md`](specifications/engines/reasoning-engine.md) |
+| Decision Engine | ✅ [`specifications/engines/decision-engine.md`](specifications/engines/decision-engine.md) |
